@@ -28,8 +28,12 @@ node --check static/app.js
 
 ## Next integrations
 
-Test a real iPhone Shortcut upload workflow; configure production authentication and HTTPS before external phone access. Add Google Takeout/Instagram archive import, deduplication, reliable date/timezone metadata, optional AI captions with explicit consent, and a printer-specific export. No hosting account, subscription, API key, or print order is needed for this version. Automated cloud sync and AI captions are not implemented.
+Apple Photos automatic import is implemented for local Macs; see [APPLE_PHOTOS.md](APPLE_PHOTOS.md) for connection, permissions, limitations and ZIP update instructions. Its macOS bridge still needs on-device verification. Configure production authentication and HTTPS before external phone access. Add Google Takeout/Instagram archive import, deduplication, reliable date/timezone metadata, optional AI captions with explicit consent, and a printer-specific export. No hosting account, subscription, API key, or print order is needed for this version. Direct Google/cloud-library sync and AI captions are not implemented. Apple Photos imports run only while the local Mac app is open.
 
 ## Hosting
 
 See [HOSTING.md](HOSTING.md) for the prepared Docker/Gunicorn deployment, private login, durable storage and backup checklist. Hosting and automated backups have not been provisioned.
+
+## Mac Photos imports
+
+Use **Photo sources → Connect Apple Photos** for automatic local scans of the last seven days, every ten minutes while the app runs. Your iPhone pictures must already be in Mac Photos via iCloud Photos or a cable import. This feature needs macOS Automation permission and an on-device test; see [APPLE_PHOTOS.md](APPLE_PHOTOS.md).

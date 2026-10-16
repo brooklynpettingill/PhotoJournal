@@ -1,8 +1,17 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PhotoJournal</title><link rel="stylesheet" href="/static/style.css"></head>
-<body><header><a class="brand" href="/">PhotoJournal<span>A little of every day.</span></a><nav><button id="journal" class="active">Your book</button><button id="calendar">Year at a glance</button><button id="print">Print preview</button></nav></header>
+<body><header><a class="brand" href="/">PhotoJournal<span>A little of every day.</span></a><nav><button id="journal" class="active">Your book</button><button id="calendar">Year at a glance</button><button id="sources">Photo sources</button><button id="print">Print preview</button></nav></header>
 <main><section class="intro"><div><p class="eyebrow">THE EVERYDAY, WORTH KEEPING</p><h1>Your year in photographs.</h1><p>Ordinary moments. Favorite people. A page for every day.</p></div><label class="year">YOUR YEAR<select id="year"></select></label></section>
 <section class="toolbar"><div><strong id="progress">0 days collected</strong><span id="approval"></span></div><button class="primary" id="add">＋ Add photographs</button></section>
 <section id="importer" hidden><h2>Bring your days together</h2><p>Choose JPEG, PNG, or WebP photos. We use the capture date when available; otherwise, the date below. Export HEIC photos as JPEG first.</p><form id="upload"><label>Date if a photo has no capture date <input type="date" id="fallback" required></label><input id="files" type="file" accept="image/jpeg,image/png,image/webp" multiple required><button class="primary">Import photos</button></form></section>
+<section id="sourcepanel" hidden>
+<h2>Let your days come to you.</h2>
+<h3>Apple Photos on this Mac</h3>
+<p>Automatically check the last seven days every 10 minutes while PhotoJournal is running. New photos become daily draft pages. Previously imported Apple photos are skipped.</p>
+<p>Your iPhone pictures need to appear in the Mac Photos app first, through iCloud Photos or a cable import. macOS will ask permission to control Photos. Only photo copies are imported; your library stays unchanged.</p>
+<button id="connectapple" class="primary">Connect Apple Photos</button> <button id="disconnectapple" hidden>Pause imports</button>
+<p id="applestatus" role="status" aria-live="polite"></p>
+<h3>Google Photos</h3><p>Google’s photo picker requires you to select photos; signing in does not allow this app to automatically read your whole library. For automatic daily imports, use Apple Photos above. Bulk Google Takeout imports are a separate feature still to come.</p>
+</section>
 <p id="message" role="status" aria-live="polite"></p><section id="content"></section>
 </main><dialog id="editor"><form method="dialog"><button class="close" aria-label="Close">✕</button></form><h2 id="editdate"></h2><p>Choose up to six photographs for this page.</p><div id="pool"></div><label>Your caption<textarea id="caption" rows="4" placeholder="What would you like to remember?"></textarea></label><div class="actions"><button id="save">Save draft</button><button id="approve" class="primary">Approve page</button></div><p id="editerror" role="alert"></p></dialog><script src="/static/app.js"></script></body></html>

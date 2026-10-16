@@ -16,3 +16,24 @@ for(const [id,v] of [['journal','book'],['calendar','calendar']])$(id).onclick=(
 $('print').onclick=()=>{view='book';render();Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))).then(()=>window.print())};
 $('upload').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;$('message').textContent='Importing your photographs…';const body=new FormData();body.append('day',$('fallback').value);for(const f of $('files').files)body.append('photos',f);try{const r=await fetch('/api/upload',{method:'POST',body});const result=await r.json();if(!r.ok)throw Error(result.error||'No supported photos could be imported.');$('year').value=result.added[0].slice(0,4);await load();$('message').textContent=`Imported ${result.added.length} photographs.${result.rejected.length?' Some files were unsupported and were skipped.':''}`;$('files').value='';$('importer').hidden=true}catch(e){$('message').textContent=e.message}finally{b.disabled=false}};
 load().catch(e=>$('message').textContent=e.message);
+
+$('sources').onclick=()=>{$('sourcepanel').hidden=!$('sourcepanel').hidden;if(!$('sourcepanel').hidden)refreshSource()};
+let sourceBusy=false,previousScan=null;
+async function refreshSource(){
+ if(sourceBusy)return;sourceBusy=true;
+ try{
+  const r=await fetch('/api/sources/apple');if(!r.ok)throw Error('Could not check the photo connection.');
+  const s=await r.json();$('connectapple').disabled=!s.available||s.running;
+  $('connectapple').textContent=s.enabled?'Check for new photos':'Connect Apple Photos';
+  $('disconnectapple').hidden=!s.enabled;
+  const when=s.last_checked?new Date(s.last_checked).toLocaleString():null;
+  $('applestatus').textContent=!s.available?'Apple Photos is available when PhotoJournal runs on your Mac.':s.running?'Checking Apple Photos… Look for a macOS permission request.':s.error?s.error:s.enabled?(when?`Last checked ${when}. Added ${s.imported} photographs.${s.failed?` ${s.failed} photos could not be imported; download their originals in Photos and try again.`:''} Checking every 10 minutes while the app runs.`:'Connected. Waiting for the first check…'):'Automatic imports are paused.';
+  if(s.last_checked&&s.last_checked!==previousScan){previousScan=s.last_checked;await load()}
+ }catch(e){$('applestatus').textContent=e.message}finally{sourceBusy=false}
+}
+async function connectApple(enabled){
+ $('connectapple').disabled=true;$('applestatus').textContent='Connecting…';
+ try{const r=await fetch('/api/sources/apple',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled})});const s=await r.json();if(!r.ok)throw Error(s.error);await refreshSource()}catch(e){$('applestatus').textContent=e.message;$('connectapple').disabled=false}
+}
+$('connectapple').onclick=()=>connectApple(true);$('disconnectapple').onclick=()=>connectApple(false);
+setInterval(()=>{if(!$('sourcepanel').hidden)refreshSource()},15000);
