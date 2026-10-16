@@ -8,9 +8,9 @@ from datetime import datetime
 from pathlib import Path
 
 FILES = [
-    'app.py', 'apple_sync.py', 'phone_import.py', 'security.py', 'wsgi.py', 'requirements.txt',
+    'app.py', 'apple_sync.py', 'phone_import.py', 'shortcut_builder.py', 'security.py', 'wsgi.py', 'requirements.txt',
     'static/index.html', 'static/app.js', 'static/style.css',
-    'tests/test_app.py', 'tests/test_security.py', 'tests/test_apple_sync.py', 'tests/test_mac_updater.py', 'tests/test_phone_import.py',
+    'tests/test_app.py', 'tests/test_security.py', 'tests/test_apple_sync.py', 'tests/test_mac_updater.py', 'tests/test_phone_import.py', 'tests/test_shortcut_builder.py',
     'tools/password_hash.py', 'tools/update_mac.py',
     'README.md', 'HOSTING.md', 'APPLE_PHOTOS.md', 'IPHONE_SHORTCUT.md', 'Dockerfile', '.dockerignore', '.gitignore',
 ]

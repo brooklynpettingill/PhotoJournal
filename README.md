@@ -41,3 +41,7 @@ Use **Photo sources → Connect Apple Photos** for automatic local scans of the 
 ## iPhone imports without iCloud
 
 Use **Photo sources → Enable iPhone uploads** for an opt-in, authenticated home-Wi-Fi receiver. See [IPHONE_SHORTCUT.md](IPHONE_SHORTCUT.md) for the free iPhone Shortcut and daily schedule. The Mac must be awake with the app running. Phone transfers use local HTTP on a trusted network; no cloud server or iCloud storage is needed. The iPhone Shortcut still requires on-device testing.
+
+## Prewired iPhone Shortcut
+
+[IPHONE_SHORTCUT.md](IPHONE_SHORTCUT.md) includes a local generator and in-app download buttons. Your Mac signs the file using Apple’s Shortcuts CLI; the cloud workspace cannot create an iCloud installation URL. Test the signed workflow on the iPhone before relying on automation. Personalized files contain your upload key and stay in ignored local data storage.

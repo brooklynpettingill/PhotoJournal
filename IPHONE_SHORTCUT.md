@@ -17,6 +17,25 @@ The updater preserves `data/` and `.venv/`, and backs up overwritten application
 
 The normal journal still binds only to loopback port 3000. A separate upload-only receiver listens on port 3002 after you enable it. It serves no photos, pages or login interface. Uploads require the private key; internet-origin requests and browser cross-site requests are rejected. **Local transfers use HTTP, so the photos and key are not encrypted on the Wi-Fi network. Use only a trusted home network; never forward port 3002 on the router.** Stop the receiver when it is not wanted. The setting and private key persist locally, so starting PhotoJournal restores an enabled receiver. If the Mac's Wi-Fi IP changes, update the Shortcut URL.
 
+## Generate the Shortcut instead of building it by hand
+
+PhotoJournal can create a `.shortcut` file with explicit connections for the photo, capture date, JPEG body, and upload headers. Signing requires Apple's `/usr/bin/shortcuts` command on macOS Monterey or later. This cloud/Linux workspace cannot sign it or publish an Apple iCloud sharing link. The generated workflow still needs a real iPhone trial; structural tests do not prove that Apple's current import/runtime accepts every action parameter.
+
+For an existing Mac installation, keep iPhone uploads enabled, stop the app with Control+C, and run this from the PhotoJournal directory:
+
+```sh
+curl -fL https://raw.githubusercontent.com/brooklynpettingill/PhotoJournal/main/shortcut_builder.py -o /tmp/photojournal-shortcut.py && .venv/bin/python /tmp/photojournal-shortcut.py
+.venv/bin/python app.py
+```
+
+The command reads your existing connection details locally, generates a two-photo test, asks Apple's CLI to sign it, and reveals the signed file in Finder. Right-click **PhotoJournal Test.shortcut → Share → AirDrop → your iPhone**, accept it there, and open it with Shortcuts. Review the actions and add the Shortcut, then run it manually while the Mac app is running. Keep the file private: its upload key is embedded in it. No credentials or personalized files are committed to GitHub.
+
+If signing fails, open the Shortcuts app on the Mac and finish any Apple Account setup it requests, then rerun the generator. Never bypass Apple's signing verification. The generator stops if signing is unavailable; it does not label an unsigned file as installable.
+
+After the test succeeds, rerun the generator with `--daily` to also produce **PhotoJournal Daily.shortcut**. The daily variant checks the **latest 100 photos**, rather than filtering to two days. It may import older pictures during its first run. Repeated copies from this same generated workflow are skipped when their decoded pixels and capture dates match. A day with more than 100 new photos requires increasing the photo count or a separate backfill. It shows a notification after the run rather than a result dialog. Point your Time of Day automation at the new daily Shortcut only after testing it.
+
+After a full app update, **Photo sources → Create test Shortcut / Create daily Shortcut** provides the same signing and download inside Safari. Transfer the downloaded file by AirDrop. An iCloud sharing URL would need to be created by you in Apple's Shortcuts app; publishing a personalized Shortcut containing an upload key is not recommended.
+
 ## Build and test a Shortcut on the iPhone
 
 Labels may differ by iOS version. Begin with a single photo and a manual run, then expand to daily automation.

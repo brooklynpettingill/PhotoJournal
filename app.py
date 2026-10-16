@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from datetime import date, datetime
 from pathlib import Path
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, send_file
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 app = Flask(__name__, static_folder='static')
@@ -180,6 +180,25 @@ def configure_iphone():
     except OSError:
         return jsonify(error='Could not start or save the receiver. Stop any other copy of PhotoJournal, check the folder is writable, and retry.'), 500
     return jsonify(phone_receiver.status())
+
+@app.post('/api/sources/iphone/shortcut')
+def download_iphone_shortcut():
+    import io
+    from shortcut_builder import signed_shortcut
+    body = request.get_json(silent=True) or {}
+    if not isinstance(body, dict) or not isinstance(body.get('test', True), bool):
+        return jsonify(error='Choose the test or daily shortcut.'), 400
+    if not phone_receiver.available or not phone_receiver.enabled:
+        return jsonify(error='Enable iPhone uploads on your Mac first.'), 400
+    status = phone_receiver.status()
+    if not status['url']:
+        return jsonify(error='Connect your Mac to home Wi-Fi first.'), 400
+    try:
+        content = signed_shortcut(status['url'], status['token'], test=body.get('test', True))
+    except (RuntimeError, ValueError) as error:
+        return jsonify(error=str(error)), 400
+    name = 'PhotoJournal Test.shortcut' if body.get('test', True) else 'PhotoJournal Daily.shortcut'
+    return send_file(io.BytesIO(content), as_attachment=True, download_name=name, mimetype='application/octet-stream')
 
 if __name__ == '__main__':
     app.config['TRUSTED_HOSTS'] = ['127.0.0.1', 'localhost', '[::1]']

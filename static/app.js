@@ -55,3 +55,14 @@ async function configurePhone(enabled){
 }
 $('enablephone').onclick=()=>configurePhone(true);$('disablephone').onclick=()=>configurePhone(false);
 $('copyphonekey').onclick=async()=>{try{await navigator.clipboard.writeText($('phonekey').value);$('phonestatus').textContent='Upload key copied. Keep it private and paste it only into your Shortcut.'}catch(e){$('phonekey').type='text';$('phonekey').select();$('phonestatus').textContent='Select and copy the upload key. Hide it before sharing a screenshot.'}};
+
+async function downloadShortcut(test){
+ $('downloadtest').disabled=$('downloaddaily').disabled=true;$('shortcutstatus').textContent='Creating and signing the Shortcut on this Mac…';
+ try{
+  const r=await fetch('/api/sources/iphone/shortcut',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({test})});
+  if(!r.ok){const result=await r.json();throw Error(result.error)}
+  const file=await r.blob(),url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=test?'PhotoJournal Test.shortcut':'PhotoJournal Daily.shortcut';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  $('shortcutstatus').textContent='Signed file downloaded. In Finder, share it by AirDrop to your iPhone, then open it in Shortcuts. Keep this file private. The iPhone test is still required.';
+ }catch(e){$('shortcutstatus').textContent=e.message}finally{$('downloadtest').disabled=$('downloaddaily').disabled=false}
+}
+$('downloadtest').onclick=()=>downloadShortcut(true);$('downloaddaily').onclick=()=>downloadShortcut(false);
