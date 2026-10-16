@@ -1,4 +1,5 @@
 import os
+import hashlib
 import sqlite3
 import uuid
 from contextlib import contextmanager
@@ -53,6 +54,11 @@ def ingest_photo(stream, fallback, source_id=None, capture_day=None):
                 day = date.fromisoformat(capture_day).isoformat()
             image = ImageOps.exif_transpose(original).convert('RGB')
             image.thumbnail((3000, 3000))
+            if source_id == 'iphone':
+                fingerprint = hashlib.sha256(str(image.size).encode() + image.tobytes()).hexdigest()
+                source_id = 'iphone:' + day + ':' + fingerprint
+                if already_imported(source_id):
+                    return None
             image.save(target, 'JPEG', quality=92)
         with db() as conn:
             if source_id:
@@ -155,5 +161,26 @@ def configure_apple():
         return jsonify(error='Could not save the photo connection. Check that your journal folder is writable.'), 500
     return jsonify(apple_sync.status())
 
+from phone_import import PhoneReceiver
+phone_receiver = PhoneReceiver(DATA, ingest_photo)
+
+@app.get('/api/sources/iphone')
+def iphone_status():
+    return jsonify(phone_receiver.status())
+
+@app.post('/api/sources/iphone')
+def configure_iphone():
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict) or not isinstance(body.get('enabled'), bool):
+        return jsonify(error='Specify whether to enable iPhone uploads.'), 400
+    if not phone_receiver.available:
+        return jsonify(error='Use the local Mac version of PhotoJournal for iPhone uploads.'), 501
+    try:
+        phone_receiver.configure(body['enabled'])
+    except OSError:
+        return jsonify(error='Could not start or save the receiver. Stop any other copy of PhotoJournal, check the folder is writable, and retry.'), 500
+    return jsonify(phone_receiver.status())
+
 if __name__ == '__main__':
+    app.config['TRUSTED_HOSTS'] = ['127.0.0.1', 'localhost', '[::1]']
     app.run(host='127.0.0.1', port=int(os.environ.get('PORT', 3000)))

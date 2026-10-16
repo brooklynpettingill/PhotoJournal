@@ -37,3 +37,7 @@ See [HOSTING.md](HOSTING.md) for the prepared Docker/Gunicorn deployment, privat
 ## Mac Photos imports
 
 Use **Photo sources → Connect Apple Photos** for automatic local scans of the last seven days, every ten minutes while the app runs. Your iPhone pictures must already be in Mac Photos via iCloud Photos or a cable import. This feature needs macOS Automation permission and an on-device test; see [APPLE_PHOTOS.md](APPLE_PHOTOS.md).
+
+## iPhone imports without iCloud
+
+Use **Photo sources → Enable iPhone uploads** for an opt-in, authenticated home-Wi-Fi receiver. See [IPHONE_SHORTCUT.md](IPHONE_SHORTCUT.md) for the free iPhone Shortcut and daily schedule. The Mac must be awake with the app running. Phone transfers use local HTTP on a trusted network; no cloud server or iCloud storage is needed. The iPhone Shortcut still requires on-device testing.

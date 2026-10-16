@@ -6,12 +6,31 @@
 <section id="importer" hidden><h2>Bring your days together</h2><p>Choose JPEG, PNG, or WebP photos. We use the capture date when available; otherwise, the date below. Export HEIC photos as JPEG first.</p><form id="upload"><label>Date if a photo has no capture date <input type="date" id="fallback" required></label><input id="files" type="file" accept="image/jpeg,image/png,image/webp" multiple required><button class="primary">Import photos</button></form></section>
 <section id="sourcepanel" hidden>
 <h2>Let your days come to you.</h2>
+<h3>iPhone camera roll · no iCloud needed</h3>
+<p>An iPhone Shortcut can send daily photos directly to your Mac. Both devices must be on your trusted home Wi-Fi, with the Mac awake and PhotoJournal running. The journal itself stays accessible only on this Mac.</p>
+<button id="enablephone" class="primary">Enable iPhone uploads</button> <button id="disablephone" hidden>Stop iPhone uploads</button>
+<p id="phonestatus" role="status" aria-live="polite"></p>
+<div id="phonepair" hidden>
+<label>Shortcut upload address<input id="phoneurl" readonly></label>
+<label>Private upload key<input id="phonekey" type="password" readonly autocomplete="off"></label>
+<button id="copyphonekey">Copy upload key</button>
+<p>Keep the key private. Photo transfers use HTTP on your local Wi-Fi; enable this only on a trusted home network. Do not forward port 3002 on your router.</p>
+<details><summary>Build the iPhone Shortcut</summary><ol>
+<li>On your iPhone, open Shortcuts, create a shortcut named “Daily PhotoJournal,” and add <strong>Find Photos</strong>. Filter Date Taken to <strong>in the last 2 days</strong> and Media Type to <strong>Image</strong>. Turn Limit off.</li>
+<li>Add <strong>Repeat with Each</strong> photo. Inside the repeat, get <strong>Date Taken</strong> from the Repeat Item, then <strong>Format Date</strong> with Custom format <code>yyyy-MM-dd</code>.</li>
+<li>Still inside the repeat, add <strong>Convert Image</strong>: convert the original Repeat Item to JPEG. Select the Repeat Item explicitly, rather than the formatted date.</li>
+<li>Add <strong>Get Contents of URL</strong> with the upload address above. Choose POST, Request Body <strong>File</strong>, and select the Converted Image.</li>
+<li>Add headers: <code>Authorization</code> = <code>Bearer </code> followed by your private upload key; <code>X-Photo-Date</code> = the Formatted Date variable; <code>Content-Type</code> = <code>image/jpeg</code>.</li>
+<li>Test with one photo first. Allow photo and local-network access when prompted. If macOS asks, allow incoming connections for Python.</li>
+<li>Once it works, add a Time of Day automation, choose this shortcut, and select <strong>Run Immediately</strong> if offered. Choose a time when your Mac is normally awake. iOS action labels and background permissions vary; test an actual scheduled run.</li>
+</ol><p>The last-two-days window catches a missed run, and repeated copies of the same image on the same date are skipped. Uploads missed for longer need a wider date filter and a manual rerun. A changing Mac Wi-Fi address requires updating the Shortcut URL.</p></details>
+</div>
 <h3>Apple Photos on this Mac</h3>
 <p>Automatically check the last seven days every 10 minutes while PhotoJournal is running. New photos become daily draft pages. Previously imported Apple photos are skipped.</p>
 <p>Your iPhone pictures need to appear in the Mac Photos app first, through iCloud Photos or a cable import. macOS will ask permission to control Photos. Only photo copies are imported; your library stays unchanged.</p>
 <button id="connectapple" class="primary">Connect Apple Photos</button> <button id="disconnectapple" hidden>Pause imports</button>
 <p id="applestatus" role="status" aria-live="polite"></p>
-<h3>Google Photos</h3><p>Google’s photo picker requires you to select photos; signing in does not allow this app to automatically read your whole library. For automatic daily imports, use Apple Photos above. Bulk Google Takeout imports are a separate feature still to come.</p>
+<h3>Google Photos</h3><p>Google’s photo picker requires you to select photos; signing in does not allow this app to automatically read your whole library. For scheduled daily imports from your iPhone, use the Shortcut connection above. Bulk Google Takeout imports are a separate feature still to come.</p>
 </section>
 <p id="message" role="status" aria-live="polite"></p><section id="content"></section>
 </main><dialog id="editor"><form method="dialog"><button class="close" aria-label="Close">✕</button></form><h2 id="editdate"></h2><p>Choose up to six photographs for this page.</p><div id="pool"></div><label>Your caption<textarea id="caption" rows="4" placeholder="What would you like to remember?"></textarea></label><div class="actions"><button id="save">Save draft</button><button id="approve" class="primary">Approve page</button></div><p id="editerror" role="alert"></p></dialog><script src="/static/app.js"></script></body></html>

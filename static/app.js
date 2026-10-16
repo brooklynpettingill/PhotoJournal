@@ -17,7 +17,7 @@ $('print').onclick=()=>{view='book';render();Promise.all([...document.images].ma
 $('upload').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;$('message').textContent='Importing your photographs…';const body=new FormData();body.append('day',$('fallback').value);for(const f of $('files').files)body.append('photos',f);try{const r=await fetch('/api/upload',{method:'POST',body});const result=await r.json();if(!r.ok)throw Error(result.error||'No supported photos could be imported.');$('year').value=result.added[0].slice(0,4);await load();$('message').textContent=`Imported ${result.added.length} photographs.${result.rejected.length?' Some files were unsupported and were skipped.':''}`;$('files').value='';$('importer').hidden=true}catch(e){$('message').textContent=e.message}finally{b.disabled=false}};
 load().catch(e=>$('message').textContent=e.message);
 
-$('sources').onclick=()=>{$('sourcepanel').hidden=!$('sourcepanel').hidden;if(!$('sourcepanel').hidden)refreshSource()};
+$('sources').onclick=()=>{$('sourcepanel').hidden=!$('sourcepanel').hidden;if(!$('sourcepanel').hidden){refreshSource();refreshPhone()}};
 let sourceBusy=false,previousScan=null;
 async function refreshSource(){
  if(sourceBusy)return;sourceBusy=true;
@@ -36,4 +36,22 @@ async function connectApple(enabled){
  try{const r=await fetch('/api/sources/apple',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled})});const s=await r.json();if(!r.ok)throw Error(s.error);await refreshSource()}catch(e){$('applestatus').textContent=e.message;$('connectapple').disabled=false}
 }
 $('connectapple').onclick=()=>connectApple(true);$('disconnectapple').onclick=()=>connectApple(false);
-setInterval(()=>{if(!$('sourcepanel').hidden)refreshSource()},15000);
+setInterval(()=>{if(!$('sourcepanel').hidden){refreshSource();refreshPhone()}},15000);
+
+let phoneBusy=false,previousPhoneReceipt=null;
+async function refreshPhone(){
+ if(phoneBusy)return;phoneBusy=true;
+ try{
+  const r=await fetch('/api/sources/iphone');if(!r.ok)throw Error('Could not check the iPhone receiver.');const s=await r.json();
+  $('enablephone').disabled=!s.available||s.enabled;$('disablephone').hidden=!s.enabled;$('phonepair').hidden=!s.enabled;
+  $('phoneurl').value=s.url||'';$('phonekey').value=s.token||'';
+  $('phonestatus').textContent=!s.available?'Open PhotoJournal on your Mac to enable iPhone uploads.':s.error?s.error:s.enabled?(s.url?`Ready for your Shortcut.${s.last_received?' Last received '+new Date(s.last_received).toLocaleString()+'.':''}`:'Receiver enabled, but no home Wi-Fi address was found. Connect the Mac to Wi-Fi and refresh.'):'iPhone uploads are off. Enable them to see your private connection details.';
+  if(s.last_received&&s.last_received!==previousPhoneReceipt){previousPhoneReceipt=s.last_received;await load()}
+ }catch(e){$('phonestatus').textContent=e.message}finally{phoneBusy=false}
+}
+async function configurePhone(enabled){
+ $('enablephone').disabled=true;
+ try{const r=await fetch('/api/sources/iphone',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled})});const s=await r.json();if(!r.ok)throw Error(s.error);await refreshPhone()}catch(e){$('phonestatus').textContent=e.message;$('enablephone').disabled=false}
+}
+$('enablephone').onclick=()=>configurePhone(true);$('disablephone').onclick=()=>configurePhone(false);
+$('copyphonekey').onclick=async()=>{try{await navigator.clipboard.writeText($('phonekey').value);$('phonestatus').textContent='Upload key copied. Keep it private and paste it only into your Shortcut.'}catch(e){$('phonekey').type='text';$('phonekey').select();$('phonestatus').textContent='Select and copy the upload key. Hide it before sharing a screenshot.'}};
